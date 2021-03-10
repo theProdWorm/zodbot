@@ -1,9 +1,7 @@
 const Discord = require('discord.js');
-
 const client = new Discord.Client();
 
 const prefix = 'z/';
-
 const fs = require('fs');
 
 client.commands = new Discord.Collection();
@@ -56,6 +54,13 @@ client.on("presenceUpdate", (oldPresence, newPresence) => {
                 .then(message => {
                     message.react(getEmoji('ZodChair'));
                 });
+
+            getRole('TwitchAnnouncementsDM').members.forEach(mem => {
+                let username = mem.user.username;
+
+                msgUser(username, `zodisp is now streaming at ${activity.url} !`);
+            })
+
             return true;
         }
     }
@@ -64,6 +69,10 @@ client.on("presenceUpdate", (oldPresence, newPresence) => {
 client.on('message', message => {
     if (message.content.match(/^(:[^:\s]+:|<:[^:\s]:[0-9]+>|<a:[^:\s]+:[0-9]+>)+$/))
         message.channel.send(message.guild.emojis.cache.find(e => e.name === 'ZodChair'));
+
+    if (message.channel.type === 'dm' && !message.author.bot) {
+        fs.writeFileSync('./DM-log.txt', `${message.author.username}: ${message.content}`);
+    }
 
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -83,29 +92,12 @@ client.on('message', message => {
         case 'clear':
             client.commands.get('clear').execute(message, args);
             break;
+        case 'msg':
+        case 'message':
+            client.commands.get('message').execute(message, args);
+            break;
     }
 });
-
-function msgUser(userID, message) {
-    client.users.fetch(userID).then(user => {
-        user.createDM().then(dm_channel => {
-            dm_channel.send(message);
-        });
-    });
-}
-
-function msgChannel(channelName, message) {
-    const channel = client.guilds.cache.find(g => g.name === 'ZodGod').channels.cache.find(channelName);
-
-    channel.send(message);
-}
-
-function getEmoji(emojiName) {
-    let emojis = client.guilds.cache.find(g => g.name === 'ZodGod').emojis.cache;
-    let emoji = emojis.find(e => e.name === emojiName);
-
-    return emoji;
-}
 
 function getRole(roleName) {
     let roles = client.guilds.cache.find(g => g.name === 'ZodGod').roles.cache;
@@ -114,4 +106,16 @@ function getRole(roleName) {
     return role;
 }
 
-client.login(''); // Confidential
+function msgUser(username, text) {
+    let members = client.guilds.cache.find(g => g.name === 'ZodGod').members.cache;
+    let user = members.find(m => m.user.username === username);
+
+    user.createDM().then(dm_channel => {
+        return dm_channel.send(text);
+    }).catch(() => {
+        console.log("Could not create DM. User probably blocked me :(");
+    });
+}
+
+
+client.login(fs.readFileSync('C:\\Users\\Emil\\Desktop\\ZodBot-login.txt')); // Confidential
