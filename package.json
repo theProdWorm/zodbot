@@ -9,10 +9,13 @@
     "author": "theProdWorm",
     "license": "ISC",
     "dependencies": {
+        "@google-cloud/local-auth": "^1.0.1",
+        "@google-cloud/pubsub": "^2.10.0",
         "axios": "^0.21.1",
+        "coffeescript": "^2.5.1",
         "discord.js": "^12.5.1",
         "dotenv": "^8.2.0",
-        "tmi.js": "^1.7.2",
-        "twitch": "^4.5.0"
+        "gapi": "0.0.3",
+        "googleapis": "^67.1.1"
     }
 }

@@ -2,6 +2,10 @@ module.exports = {
     name: 'message',
     description: "Sends a message in the specified text channel.",
     execute(message, args) {
+        if (!message.member.roles.cache.some(r => r.name === 'Owner' || r.name === 'Admin' || r.name === 'Discord Mod')) {
+            message.channel.send("You do not have permission to use this command.");
+        }
+
         if (args.length < 2) {
             message.channel.send("Invalid command usage. (placeholder)");
             return;
@@ -13,24 +17,41 @@ module.exports = {
                 channelIDs.push(word.substring(2, word.length - 1));
             } else break;
         }
-        channelIDs.forEach(id => {
-            id = id.substring(2, id.length - 1);
-        });
 
         let content = "";
         let reactions = [];
 
-        let react = false;
+        let react = false,
+            spam = false;
+
+        let spamArray = [];
+
         args.forEach(word => {
             if (args.indexOf(word) < channelIDs.length) return;
             if (word === 'react()') {
-                react = true
+                react = true;
+                spam = false;
                 return;
-            };
+            } else if (word === 'spam()') {
+                react = false;
+                spam = true;
+                return;
+            }
 
             if (react) reactions.push(word);
-            else content += " " + word;
+            else if (spam) {
+                let times = parseInt(word);
+                if (typeof times === 'number') {
+                    for (var i = 0; i < (times - 1); i++) {
+                        spamArray = spamArray.concat(channelIDs);
+                        console.log(spamArray);
+                    }
+                } else {
+                    message.channel.send("Argument after spam() must be a number");
+                }
+            } else content += " " + word;
         });
+        channelIDs = channelIDs.concat(spamArray);
 
         channelIDs.forEach(id => {
             let channel = message.guild.channels.cache.get(id);

@@ -7,8 +7,12 @@ module.exports = {
             return;
         }
 
-        if (message.member.roles.cache.some(r => r.name === 'Owner' || r.name === 'Admin' || r.name === 'DiscordMod')) {
+        if (message.member.roles.cache.some(r => r.name === 'Owner' || r.name === 'Admin' || r.name === 'Discord Mod')) {
             let lim = parseInt(args[0]);
+            if (lim >= 100) {
+                message.channel.send("Maximum value is 99");
+                return;
+            }
             if (typeof lim === typeof undefined || lim === NaN) {
                 console.log("Please specify the desired amount of messages to remove.");
                 return;

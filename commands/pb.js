@@ -9,7 +9,7 @@ module.exports = {
             return;
         }
 
-        const pb_dict = JSON.parse(fs.readFileSync('././pbs.json/'));
+        const pb_dict = JSON.parse(fs.readFileSync('../resources/pbs.json/'));
 
         var amount_of_pbs = 0;
         var amount_of_pbs_per_version = {};
@@ -109,7 +109,7 @@ module.exports = {
 
                     pb_dict[args[1]][amount_of_pbs + 1] = args[2];
 
-                    fs.writeFileSync('././pbs.json', JSON.stringify(pb_dict));
+                    fs.writeFileSync('../resources/pbs.json', JSON.stringify(pb_dict));
 
                     console.log('Saved new PB!');
 
@@ -147,7 +147,7 @@ module.exports = {
                     console.log(max_index + ': ' + max_version);
                     console.log(delete pb_dict[max_version][max_index]);
 
-                    fs.writeFileSync('././pbs.json', JSON.stringify(pb_dict));
+                    fs.writeFileSync('../resources/pbs.json', JSON.stringify(pb_dict));
 
                     message.channel.send("Removed last PB entry.")
                         .then(function(message) {
