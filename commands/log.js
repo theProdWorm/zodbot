@@ -1,5 +1,5 @@
 module.exports = {
-    name: 'clog',
+    name: 'log',
     description: "Logs message to console.",
     execute(message, args) {
         console.log(args.join('\n'));

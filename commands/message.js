@@ -2,19 +2,16 @@ module.exports = {
     name: 'message',
     description: "Sends a message in the specified text channel.",
     execute(message, args) {
-        if (!message.member.roles.cache.some(r => r.name === 'Owner' || r.name === 'Admin' || r.name === 'Discord Mod')) {
-            message.channel.send("You do not have permission to use this command.");
-        }
+        if (!message.member.roles.cache.some(r => r.name === 'Owner' || r.name === 'Admin' || r.name === 'Discord Mod'))
+            return message.channel.send("You do not have permission to use this command.");
 
-        if (args.length < 2) {
-            message.channel.send("Invalid command usage. (placeholder)");
-            return;
-        }
+        if (args.length < 2)
+            return message.channel.send("Invalid command usage.");
         let channelIDs = [];
 
-        for (var word of args) {
-            if (word.match(/^(<#[0-9]+>)+$/)) {
-                channelIDs.push(word.substring(2, word.length - 1));
+        for (var channel of args) {
+            if (channel.match(/^(<#[0-9]+>)+$/)) {
+                channelIDs.push(channel.substring(2, channel.length - 1));
             } else break;
         }
 
@@ -44,7 +41,6 @@ module.exports = {
                 if (typeof times === 'number') {
                     for (var i = 0; i < (times - 1); i++) {
                         spamArray = spamArray.concat(channelIDs);
-                        console.log(spamArray);
                     }
                 } else {
                     message.channel.send("Argument after spam() must be a number");

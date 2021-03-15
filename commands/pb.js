@@ -9,7 +9,7 @@ module.exports = {
             return;
         }
 
-        const pb_dict = JSON.parse(fs.readFileSync('../resources/pbs.json/'));
+        const pb_dict = JSON.parse(fs.readFileSync('././resources/pbs.json/'));
 
         var amount_of_pbs = 0;
         var amount_of_pbs_per_version = {};
@@ -61,8 +61,6 @@ module.exports = {
                         return;
                     }
                 }
-
-                console.log("That version is not in the registry.");
                 break;
             case 'current':
                 if (amount_of_pbs < 1) {
@@ -108,10 +106,7 @@ module.exports = {
                     }
 
                     pb_dict[args[1]][amount_of_pbs + 1] = args[2];
-
-                    fs.writeFileSync('../resources/pbs.json', JSON.stringify(pb_dict));
-
-                    console.log('Saved new PB!');
+                    save();
 
                     message.channel.send("New PB saved!")
                         .then(function(message) {
@@ -147,7 +142,7 @@ module.exports = {
                     console.log(max_index + ': ' + max_version);
                     console.log(delete pb_dict[max_version][max_index]);
 
-                    fs.writeFileSync('../resources/pbs.json', JSON.stringify(pb_dict));
+                    save();
 
                     message.channel.send("Removed last PB entry.")
                         .then(function(message) {
@@ -158,12 +153,26 @@ module.exports = {
                 }
                 break;
             case 'newversion':
-
-
-                // Add a new version to the pbs.json dictionary
-
+            case 'newv':
+            case 'nv':
+                pb_dict[args[1]] = {};
+                save();
+                message.channel.send(`Added new version to the registry: ${args[1]}`);
+                break;
+            case 'removeversion':
+            case 'removev':
+            case 'rv':
+                if (pb_dict[args[1]]) delete pb_dict[args[1]];
+                else {
+                    message.channel.send(`Removed version ${args[1]} from the registry.`);
+                }
+                save();
 
                 break;
+        }
+
+        function save() {
+            fs.writeFileSync('../resources/pbs.json', JSON.stringify(pb_dict, null, '\t'));
         }
     }
 }

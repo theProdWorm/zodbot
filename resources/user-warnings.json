@@ -1,1 +1,15 @@
-{"284397300233797633":0}
+{
+	"284397300233797633": {
+		"warnings": 2,
+		"timeout": 30,
+		"reasons": [
+			"profanity",
+			"profanity"
+		]
+	},
+	"286127234098659329": {
+		"warnings": 0,
+		"timeout": 0,
+		"reasons": []
+	}
+}

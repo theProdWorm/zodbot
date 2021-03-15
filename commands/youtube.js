@@ -2,24 +2,41 @@ module.exports = {
     name: 'youtube',
     description: "Searches YouTube for query",
     execute(message, args) {
-        const google = require('googleapis').google;
-        const youtube = google.youtube('v3');
+        if (args.length < 1) {
+            message.channel.send("https://www.youtube.com/channel/UCBb4eNzHMUpFnNWskn0mTOg")
+            return;
+        }
 
-
+        require('dotenv').config();
+        const youtube = require('../main').youtube;
 
         youtube.search.list({
             key: process.env.YOUTUBE_TOKEN,
-            part: 'contentDetails',
+            part: 'snippet',
+            type: 'youtube#video',
             q: args.join(' '),
             maxResults: 5
         }).then(response => {
-            const videos = response.data.items.forEach(v => {
-                const video = v.contentDetails.upload.videoId;
-                const url = `https://youtube.com/watch?v=${video}`;
+            var videos = [];
 
-                return url;
-            }).join('\n');
+            response.data.items.forEach(result => {
+                const videoTitle = result.snippet.title;
+                const videoID = result.id.videoId;
+                const url = `https://youtube.com/watch?v=${videoID}`;
 
+                const embed = {
+                    embed: {
+                        title: [videoTitle],
+                        url: [url],
+                        color: 15540740
+                    }
+                }
+
+                videos.push(embed);
+            });
+            videos = videos.join('\n');
+
+            message.channel.send(videos);
         }).catch(err => console.log(err));
     }
 }

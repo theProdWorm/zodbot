@@ -1,10 +1,21 @@
-[{
-    "embed": {
-        "title": "ZodBot command helper",
-        "color": 13312020,
-        "fields": [{
-            "name": "The \"pb\" command",
-            "value": "``` z/pb all/list\n\n-> Gets all of zodisp's PBs through history.`````` z/pb current <version>\n\n-> Gets zodsp's current PB.`````` z/pb new/add <version> <time>\n\n-> Appends a new PB, where <version> is the game version you played on and <time> is the time to be added to the list. Only Zodi can use this command.`````` z/pb remove/removelast\n\n-> Removes the last entry in the PBs list.```"
-        }]
+{
+    "pb": {
+        "embed": {
+            "title": "ZodBot command helper",
+            "color": 15540740,
+            "fields": [{
+                "name": "The \"pb\" command",
+                "value": "``` z/pb all/list\n\n-> Gets all of Zodi's PBs through history.```"
+            }, {
+                "name": "\u200b",
+                "value": "``` z/pb current <version>\n\n-> Gets Zodi's current PB.```"
+            }, {
+                "name": "\u200b",
+                "value": "``` z/pb new/add <version> <time>\n\n-> Appends a new PB, where <version> is the game version you played on and <time> is the time to be added to the list.```"
+            }, {
+                "name": "\u200b",
+                "value": "``` z/pb remove/removelast\n\n-> Removes the last entry in the PBs list.```"
+            }]
+        }
     }
-}]
+}

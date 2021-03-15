@@ -22,6 +22,14 @@ for (const file of commandFiles) {
 client.once('ready', () => {
     console.log('ZodBot is online!');
 
+    client.channels.fetch('814163942208307220').then(channel => {
+        const roleMessages = JSON.parse(fs.readFileSync('./resources/role-messages.json'));
+
+        Object.keys(roleMessages).forEach(id => {
+            channel.messages.fetch(id).catch(err => console.log);
+        });
+    });
+
     client.user.setActivity("z/help", {
         type: "LISTENING"
     });
@@ -74,17 +82,17 @@ client.on("presenceUpdate", (oldPresence, newPresence) => {
 });
 
 client.on('message', message => {
-    if (message.content.match(/^(:[^:\s]+:|<:[^:\s]:[0-9]+>|<a:[^:\s]+:[0-9]+>)+$/)) {
-        message.channel.send(message.guild.emojis.cache.find(e => e.name === 'ZodChair'));
+    if (message.content.match(/^(:[^:\s]+:|<:[^:\s]+:[0-9]+>|<a:[^:\s]+:[0-9]+>)+$/)) {
+        message.react(getEmoji('ZodChair'));
     }
-    if (message.channel.type === 'dm' && !message.author.bot) {
+    if (message.channel.type === 'dm') {
         fs.writeFileSync('./resources/DM-log.txt', `${message.author.username}: ${message.content}`);
     }
 
     if (message.author.bot) return;
+    if (message.channel.type === 'dm') return message.channel.send("You cannot use commands in DMs.");
     hasProfanity(message).then(isSwear => {
         if (isSwear) {
-            message.react('🤬');
             message.channel.send(`${message.author} Please try to keep chat PG.`);
         }
     });
@@ -99,7 +107,7 @@ client.on('message', message => {
             client.commands.get('help').execute(message, args);
             break;
         case 'ping':
-            client.commands.get('ping').execute(message, args);
+            message.channel.send('pong!');
             break;
         case 'pb':
             client.commands.get('pb').execute(message, args);
@@ -114,26 +122,71 @@ client.on('message', message => {
         case 'mute':
             client.commands.get('mute').execute(message, args);
             break;
-        case 'pfp':
-            client.commands.get('pfp').execute(message, args);
+        case 'rolemessage':
+        case 'rolemsg':
+            client.commands.get('rolemsg').execute(message, args);
+            break;
+        case 'warn':
+            client.commands.get('warn').execute(message, args);
             break;
         case 'youtube':
         case 'yt':
+            client.commands.get('youtube').execute(message, args);
+            break;
+        case 'video':
+            client.commands.get('video').execute(message, args);
+            break;
+        case 'command':
 
             break;
         case 'clog':
-            client.commands.get('clog').execute(message, args);
+            client.commands.get('log').execute(message, args);
             break;
     }
 });
 
 client.on('messageUpdate', (oldMessage, newMessage) => {
-    console.log('message update');
     if (oldMessage.author.bot) return;
     hasProfanity(newMessage).then(isSwear => {
         if (isSwear) {
-            newMessage.react('🤬');
             newMessage.channel.send(`${newMessage.author} Please try to keep chat PG.`);
+        }
+    });
+});
+
+client.on('messageDelete', message => {
+    var roleMessages = JSON.parse(fs.readFileSync('./resources/role-messages.json'));
+
+    if (Object.keys(roleMessages).includes(message.id)) {
+        delete roleMessages[message.id];
+        fs.writeFileSync('./resources/role-messages.json', JSON.stringify(roleMessages, null, '\t'));
+    }
+});
+
+client.on('messageReactionAdd', (reaction, user) => {
+    if (user.bot) return;
+
+    const roleMessages = JSON.parse(fs.readFileSync('./resources/role-messages.json'));
+    Object.keys(roleMessages).forEach(msgID => {
+
+
+        if (reaction.message.id === msgID) {
+            const member = client.guilds.cache.find(g => g.name === 'ZodGod').member(user);
+            const role = roleMessages[msgID][reaction.emoji];
+            member.roles.add(getRoleById(role));
+        }
+    });
+});
+
+client.on('messageReactionRemove', (reaction, user) => {
+    if (user.bot) return;
+    const roleMessages = JSON.parse(fs.readFileSync('./resources/role-messages.json'));
+
+    Object.keys(roleMessages).forEach(msgID => {
+        if (reaction.message.id === msgID) {
+            const member = client.guilds.cache.find(g => g.name === 'ZodGod').member(user);
+            const role = roleMessages[msgID][reaction.emoji];
+            member.roles.remove(getRoleById(role));
         }
     });
 });
@@ -160,41 +213,38 @@ async function hasProfanity(message) {
                 fs.appendFileSync('./resources/profanity-data.txt', message.content + '\n');
             }
 
-            let userWarnings = JSON.parse(fs.readFileSync('./resources/user-warnings.json'));
-            userWarnings[message.author.id] += 1;
-
-            if (userWarnings[message.author.id] > 1) {
-                client.commands.get('mute').execute(message, [`${message.author}`, "15"]);
-                userWarnings[message.author.id] = 0;
-            }
-            fs.writeFileSync('./resources/user-warnings.json', JSON.stringify(userWarnings));
-
             message.react('🤬');
-            message.channel.send(`${message.author} Please try to keep chat PG.`);
+            client.commands.get('warn').execute(message, [`<@!${message.member.user.id}>`, "profanity"]);
         }
-
     } else {
         console.log("blacklist is undefined");
     }
 }
 
 function getRole(roleName) {
-    let roles = client.guilds.cache.find(g => g.name === 'ZodGod').roles.cache;
-    let role = roles.find(r => r.name === roleName);
+    const roles = client.guilds.cache.find(g => g.name === 'ZodGod').roles.cache;
+    const role = roles.find(r => r.name === roleName);
+
+    return role;
+}
+
+function getRoleById(roleID) {
+    const roles = client.guilds.cache.find(g => g.name === 'ZodGod').roles.cache;
+    const role = roles.get(roleID);
 
     return role;
 }
 
 function getMember(memberID) {
-    let members = client.guilds.cache.find(g => g.name === 'ZodGod').members.cache;
-    let member = members.get(memberID);
+    const members = client.guilds.cache.find(g => g.name === 'ZodGod').members.cache;
+    const member = members.get(memberID);
 
     return member;
 }
 
 function getEmoji(emojiName) {
-    let emojis = client.guilds.cache.find(g => g.name === 'ZodGod').emojis.cache;
-    let emoji = emojis.find(e => e.name === emojiName);
+    const emojis = client.guilds.cache.find(g => g.name === 'ZodGod').emojis.cache;
+    const emoji = emojis.find(e => e.name === emojiName);
 
     return emoji;
 }
@@ -223,15 +273,17 @@ async function checkNewUploads() {
             console.log("No new uploads from Zodi.");
         }
     }).catch(err => console.log(err));
-    setTimeout(checkNewUploads, 30000);
+    setTimeout(checkNewUploads, 60000);
 }
 
 checkNewUploads();
-client.login(fs.readFileSync('C:\\Users\\Emil\\Desktop\\ZodBot-login.txt', 'utf-8'));
+client.login(process.env.ZODBOT_LOGIN);
 
 module.exports = {
     client: client,
+    youtube: youtube,
     getRole: getRole,
+    getRoleById: getRoleById,
     getEmoji: getEmoji,
     getMember: getMember
 }
